@@ -66,30 +66,61 @@
                                              "protected" "public" "raise" "rand" "readline"
                                              "readlines" "sleep" "srand"))
                                    :name 'syntax-builtin-attribute)
-                    ;;
+                    ;; Singleton objects.
                     (make-tm-match (tokens :word-boundary
                                            '("nil" "true" "false"))
                                    :name 'syntax-constant-attribute)
+                    ;; Keywords that evaluate to certain values.
                     (make-tm-match (tokens :word-boundary
                                            '("__LINE__" "__ENCODING__" "__FILE__"))
                                    :name 'syntax-builtin-attribute)
-                    (make-tm-match "\(^|[^:]\) \(:@\{0,2\} \(?:\sw|\s_\)+\)"
+                    ;; Symbols.
+                    (make-tm-match "\(:@\{0,2\}[a-zA-Z_]+\)"
+                                   :name 'syntax-constant-attribute)
+                    ;; Special globals.
+                    (make-tm-match (tokens :word-boundary
+                                           '("LOAD_PATH" "LOADED_FEATURES" "PROGRAM_NAME"
+                                             "ERROR_INFO" "ERROR_POSITION"
+                                             "FS" "FIELD_SEPARATOR"
+                                             "OFS" "OUTPUT_FIELD_SEPARATOR"
+                                             "RS" "INPUT_RECORD_SEPARATOR"
+                                             "NR" "INPUT_LINE_NUMBER"
+                                             "LAST_READ_LINE" "DEFAULT_OUTPUT" "DEFAULT_INPUT"
+                                             "PID" "PROCESS_ID" "CHILD_STATUS"
+                                             "LAST_MATCH_INFO" "IGNORECASE"
+                                             "ARGV" "MATCH" "PREMATCH" "POSTMATCH"
+                                             "LAST_PAREN_MATCH" "stdin" "stdout" "stderr"
+                                             "DEBUG" "FILENAME" "VERBOSE" "SAFE" "CLASSPATH"
+                                             "JRUBY_VERSION" "JRUBY_REVISION" "ENV_JAVA"))
+                                   :name 'syntax-builtin-attribute)
+                    (make-tm-match "\(\$|@|@@\)[a-zA-Z_]+"
+                                   :name 'syntax-variable-attribute)
+                    ;; Constants
+                    (make-tm-match "[A-Z]+[a-zA-Z_]*"
+                                   :name 'syntax-type-attribute)
+                    ;; Ruby 1.9-style symbol hash keys.
+                    (make-tm-match "\(?:^\\s*|[[{(,]\\s*|[0-9A-Za-z]\\s+\)\([0-9a-zA-Z_]+:\)[^:]"
+                                   :captures (vector nil
+                                                     (make-tm-name 'syntax-constant-attribute)))
+                    ;; Conversion methods on Kernel.
+                    (make-tm-match (tokens :word-boundary
+                                           '("Array" "Complex" "Float" "Hash"
+                                             "Integer" "Rational" "String"))
+                                   :name 'syntax-builtin-attribute)
+                    ;; Expression expansion.
+                    ;; skip
+                    ;; Negation char.
+                    ;; skip
+                    ;; Character literals.
+                    ;; skip
                     (make-tm-region "#" "$" :name 'syntax-comment-attribute)
                     (make-tm-region "=begin" "=end" :name 'syntax-comment-attribute)
-                    (make-tm-match (tokens :word-boundary
-                                           '("self" "nil" "true" "false" "__FILE__" "__LINE__" "__ENCODING__"))
-                                   :name 'syntax-constant-attribute)
                     (make-tm-string-region "\"")
                     (make-tm-string-region "'")
                     (make-tm-match integer-literals
                                    :name 'syntax-constant-attribute)
                     (make-tm-match floating-point-literals
-                                   :name 'syntax-constant-attribute)
-                    #+nil
-                    (make-tm-match (tokens nil '("+" "-" "*" "**" "/" "//" "%" "@"
-                                                 "<<" ">>" "&" "|" "^" "~"
-                                                 "<" ">" "<=" ">=" "==" "!="))
-                                   :name 'syntax-keyword-attribute))))
+                                   :name 'syntax-constant-attribute))))
     (make-tmlanguage :patterns patterns)))
 
 (defvar *ruby-syntax-table*
